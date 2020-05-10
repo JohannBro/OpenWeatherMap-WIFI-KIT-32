@@ -13,11 +13,11 @@
 #include "heltec.h"
 
 
-const char* ssid = ".....";  // SSID du Wifi
-const char* password =  "......"; // Mot de passe du Wifi
+const char* ssid = "Vella Lavella";  // SSID du Wifi
+const char* password =  "F4UCorsair"; // Mot de passe du Wifi
  
-const String endpoint = "https://api.openweathermap.org/data/2.5/weather?q=......,..&units=metric&lang=fr&appid="; // URL vers l'API OWM
-const String key = "......"; // Cle API de OWM
+const String endpoint = "https://api.openweathermap.org/data/2.5/weather?q=roscanvel,fr&units=metric&lang=fr&appid="; // URL vers l'API OWM
+const String key = "e92da81672165bb3866f5b9f6f61464b"; // Cle API de OWM
 
 void logo(){
   Heltec.display -> clear();
@@ -113,22 +113,28 @@ void displayWeather(String payload){
             return;
         } else {
             const char* location = doc["name"]; // Le lieu
-            Heltec.display -> drawString(10, 0, location);
+            Heltec.display->setTextAlignment(TEXT_ALIGN_CENTER);
+            Heltec.display->setFont(ArialMT_Plain_16);
+            Heltec.display -> drawString(64, 0, location);
+            Heltec.display->setTextAlignment(TEXT_ALIGN_LEFT);
+            Heltec.display->setFont(ArialMT_Plain_10);
             JsonObject data = doc["main"];
-            double temperature = data["temp"];
-            //double feels = data["feels_like"];
+            float temperature = data["temp"];
+            //float feels = data["feels_like"];
             int mini = data["temp_min"];
             int maxi = data["temp_max"];
             int pressure = data["pressure"];
             int humidity = data["humidity"];
-            Heltec.display -> drawString(0, 12, "Temp : " + (String)temperature + "°C");
-            Heltec.display -> drawString(0, 22, "Min : " + (String)mini + "°C");
-            Heltec.display -> drawString(0, 32, "Max : " + (String)maxi + "°C");
-            Heltec.display -> drawString(0, 42, "Pression : " + (String)pressure + "Hpa");
-            Heltec.display -> drawString(0, 52, "Humidite : " + (String)humidity + "%");
+            Heltec.display -> drawString(0, 14, "Temp : " + (String)temperature + "°C");
+            Heltec.display -> drawString(0, 24, "Min : " + (String)mini + "°C");
+            Heltec.display -> drawString(0, 34, "Max : " + (String)maxi + "°C");
+            Heltec.display -> drawString(0, 44, "Pression : " + (String)pressure + " hPa");
+            Heltec.display -> drawString(0, 54, "Humidite : " + (String)humidity + "%");
             JsonObject weather = doc["weather"][0];
             String sky = weather["icon"];
-            displayIcon(sky);            
+            displayIcon(sky);
+            signalBars(); // affichage de la qualité du signal wifi
+            batteryPower(); // affiche le niveau de batterie            
             Heltec.display -> display(); // Affichage de l'écran météo   
         }
 }
@@ -170,14 +176,40 @@ void displayIcon(String sky) {
       icon = nothing_bits; // pas d'icône trouvée
       break;
   }
-  Heltec.display -> drawXbm(97,0,30,30,(const unsigned char *)icon);
+  Heltec.display -> drawXbm(80,15,30,30,(const unsigned char *)icon);
+}
+
+void signalBars () {
+      long rssi = WiFi.RSSI();
+      int bars;
+      if (rssi > -55) { 
+        bars = 5;
+      } else if (rssi < -55 & rssi > -65) {
+        bars = 4;
+      } else if (rssi < -65 & rssi > -70) {
+        bars = 3;
+      } else if (rssi < -70 & rssi > -78) {
+        bars = 2;
+      } else if (rssi < -78 & rssi > -82) {
+        bars = 1;
+      } else {
+        bars = 0;
+      }
+      for (int b=0; b <= bars; b++) {
+        Heltec.display->fillRect(110 + (b*3),50 - (b*2),2,b*2); 
+      }
+}
+
+void batteryPower () {
+    Heltec.display->drawRect(110,56,18,8);
+    // TODO Ajouter la gestion de la batterie
 }
 
  
 void loop() {
 
   if ((WiFi.status() == WL_CONNECTED)) { // Vérification du status Wifi
- 
+    
     HTTPClient http;
  
     http.begin(endpoint + key); // URL vers l'API
