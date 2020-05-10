@@ -23,4 +23,12 @@ const char* password =  "......"; // Mot de passe du Wifi
 const String endpoint = "https://api.openweathermap.org/data/2.5/weather?q=......,..&units=metric&lang=fr&appid="; // URL vers l'API OWM
 const String key = "......"; // Cle API de OWM
 ```
+dans le setup()
+Choix de connexion Wifi (Hard coded ou WPS)
+```
+//wifiConnect(); // Choisir wifiConnect() pour une connection Wifi avec les identifiants Wifi
+wifiConnectWPS(); // Choisir wifiConnectWPS() pour une connection Wifi en WPS
+```
 
+# A faire
+Gestion de la batterie
