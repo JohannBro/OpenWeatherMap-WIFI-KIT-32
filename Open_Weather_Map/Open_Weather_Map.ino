@@ -2,22 +2,98 @@
 * Meteo en direct via l'API d'Open Wearher Map sur WIFI KIT 32 de Heltec
 * Auteur : Johann Brochier
 * Brochier.IO
-* V0.2 2020
+* V0.3 2020
 */
  
 
 #include <ArduinoJson.h>
 #include <WiFi.h>
+#include "esp_wps.h"
 #include <HTTPClient.h>
 #include "images.h"
 #include "heltec.h"
 
+#define ESP_WPS_MODE      WPS_TYPE_PBC
+#define ESP_MANUFACTURER  "ESPRESSIF"
+#define ESP_MODEL_NUMBER  "ESP32"
+#define ESP_MODEL_NAME    "ESPRESSIF IOT"
+#define ESP_DEVICE_NAME   "ESP STATION"
 
-const char* ssid = "Vella Lavella";  // SSID du Wifi
-const char* password =  "F4UCorsair"; // Mot de passe du Wifi
+static esp_wps_config_t config;
+
+const char* ssid = "......";  // SSID du Wifi
+const char* password =  "......"; // Mot de passe du Wifi
  
-const String endpoint = "https://api.openweathermap.org/data/2.5/weather?q=roscanvel,fr&units=metric&lang=fr&appid="; // URL vers l'API OWM
-const String key = "e92da81672165bb3866f5b9f6f61464b"; // Cle API de OWM
+const String endpoint = "https://api.openweathermap.org/data/2.5/weather?q=......,..&units=metric&lang=fr&appid="; // URL vers l'API OWM
+const String key = "......"; // Cle API de OWM
+
+void wpsInitConfig(){
+  config.crypto_funcs = &g_wifi_default_wps_crypto_funcs;
+  config.wps_type = ESP_WPS_MODE;
+  strcpy(config.factory_info.manufacturer, ESP_MANUFACTURER);
+  strcpy(config.factory_info.model_number, ESP_MODEL_NUMBER);
+  strcpy(config.factory_info.model_name, ESP_MODEL_NAME);
+  strcpy(config.factory_info.device_name, ESP_DEVICE_NAME);
+}
+
+String wpspin2string(uint8_t a[]){
+  char wps_pin[9];
+  for(int i=0;i<8;i++){
+    wps_pin[i] = a[i];
+  }
+  wps_pin[8] = '\0';
+  return (String)wps_pin;
+}
+
+void WiFiEvent(WiFiEvent_t event, system_event_info_t info){
+  switch(event){
+    case SYSTEM_EVENT_STA_START:
+      Serial.println("Station Mode Started");
+      break;
+    case SYSTEM_EVENT_STA_GOT_IP:
+      Serial.println("Connecté à :" + String(WiFi.SSID()));
+      Serial.print("Got IP: ");
+      Serial.println(WiFi.localIP());
+      break;
+    case SYSTEM_EVENT_STA_DISCONNECTED:
+      Serial.println("Déconnecté, en attente de reconnexion");
+      WiFi.reconnect();
+      break;
+    case SYSTEM_EVENT_STA_WPS_ER_SUCCESS:
+      Heltec.display -> clear();
+      Heltec.display -> drawString(64,16,"Succès WPS");
+      Heltec.display -> drawString(64,40,"Patientez...");
+      Heltec.display -> display();
+      Serial.println("Succès WPS, arrêt de WPS et connexion à: " + String(WiFi.SSID()));
+      esp_wifi_wps_disable();
+      delay(10);
+      WiFi.begin();
+      break;
+    case SYSTEM_EVENT_STA_WPS_ER_FAILED:
+      Serial.println("Erreur WPS, nouvel essai");
+      Heltec.display -> clear();
+      Heltec.display -> drawString(64,32,"Erreur WPS");
+      Heltec.display -> display();
+      esp_wifi_wps_disable();
+      esp_wifi_wps_enable(&config);
+      esp_wifi_wps_start(0);
+      break;
+    case SYSTEM_EVENT_STA_WPS_ER_TIMEOUT:
+      Serial.println("Délais WPS dépassé, nouvel essai");
+      Heltec.display -> clear();
+      Heltec.display -> drawString(64,32,"Erreur WPS");
+      Heltec.display -> display();
+      esp_wifi_wps_disable();
+      esp_wifi_wps_enable(&config);
+      esp_wifi_wps_start(0);
+      break;
+    case SYSTEM_EVENT_STA_WPS_ER_PIN:
+      Serial.println("WPS_PIN = " + wpspin2string(info.sta_er_pin.pin_code));
+      break;
+    default:
+      break;
+  }
+}
 
 void logo(){
   Heltec.display -> clear();
@@ -33,7 +109,8 @@ void setup() {
   
   Serial.begin(115200);
   
-  wifiConnect();
+  //wifiConnect(); // Choisir wifiConnect() pour une connection Wifi avec les identifiants Wifi
+  wifiConnectWPS(); // Choisir wifiConnectWPS() pour une connection Wifi en WPS
 }
 
 void wifiConnect() {
@@ -58,6 +135,25 @@ void wifiConnect() {
     }
   delay(500);
   Heltec.display -> clear();
+}
+
+void wifiConnectWPS () {
+  Heltec.display -> clear();
+  WiFi.onEvent(WiFiEvent);
+  WiFi.mode(WIFI_MODE_STA);
+  
+  Heltec.display->setTextAlignment(TEXT_ALIGN_CENTER);
+  Heltec.display->setFont(ArialMT_Plain_16);
+  Heltec.display->drawString(64,11,"Appuyez sur");
+  Heltec.display->drawString(64,27,"le bouton WPS");
+  Heltec.display->drawString(64,43,"de votre routeur...");
+  Heltec.display->display();
+  Serial.println("Démmarage de WPS");
+  
+  wpsInitConfig();
+  esp_wifi_wps_enable(&config);
+  esp_wifi_wps_start(0);
+  
 }
 
 void displayWeather(String payload){
@@ -223,10 +319,15 @@ void loop() {
         displayWeather(payload);
     }
     else {
+      Heltec.display -> clear();
+      Heltec.display->setTextAlignment(TEXT_ALIGN_CENTER);
+      Heltec.display->setFont(ArialMT_Plain_16);
+      Heltec.display -> drawString(64,32,"Erreur réseau");
+      Heltec.display -> display();
       Serial.println("Erreur requete HTTP");
     }
 
-    http.end(); // liberation des ressources
+    http.end(); // libération des ressources
   }
   delay(30000); // Délais de 30 secondes avant de récupérer les nouvelles données sur OWM
 }
