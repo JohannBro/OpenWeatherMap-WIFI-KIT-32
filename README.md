@@ -34,3 +34,11 @@ wifiConnectWPS(); // Choisir wifiConnectWPS() pour une connection Wifi en WPS
 
 # A faire
 Gestion de la batterie
+
+
+
+# Consommation
+
+L'intensité demandée est de 60mA environ en fonctionnement normal.
+
+![02](./images/02.jpg)
