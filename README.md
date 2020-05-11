@@ -28,7 +28,7 @@ const String key = "......"; // Cle API de OWM
 dans le setup()
 Choix de connexion Wifi (Identifiants dans le code ou WPS)
 ```
-//wifiConnect(); // Choisir wifiConnect() pour une connection Wifi avec les identifiants Wifi
+//wifiConnect(); // Choisir wifiConnect() pour une connection Wifi avec les identifiants                     Wifi
 wifiConnectWPS(); // Choisir wifiConnectWPS() pour une connection Wifi en WPS
 ```
 
@@ -40,5 +40,9 @@ Gestion de la batterie
 # Consommation
 
 L'intensité demandée est de 60mA environ en fonctionnement normal.
+
+Lors de transferts de données via Wifi la consommation est de 135mA environ.
+
+En veille "Light sleep" la consommation descend à 11mA. ( https://www.youtube.com/watch?v=TE8BYvdfDUc)
 
 ![02](./images/02.jpg)

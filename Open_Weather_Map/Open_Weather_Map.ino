@@ -27,6 +27,8 @@ const char* password =  "......"; // Mot de passe du Wifi
 const String endpoint = "https://api.openweathermap.org/data/2.5/weather?q=......,..&units=metric&lang=fr&appid="; // URL vers l'API OWM
 const String key = "......"; // Cle API de OWM
 
+int cycle = 0; // Init du cycle pour la mise en veille
+
 void wpsInitConfig(){
   config.crypto_funcs = &g_wifi_default_wps_crypto_funcs;
   config.wps_type = ESP_WPS_MODE;
@@ -48,7 +50,7 @@ String wpspin2string(uint8_t a[]){
 void WiFiEvent(WiFiEvent_t event, system_event_info_t info){
   switch(event){
     case SYSTEM_EVENT_STA_START:
-      Serial.println("Station Mode Started");
+      Serial.println("Mode station");
       break;
     case SYSTEM_EVENT_STA_GOT_IP:
       Serial.println("Connecté à :" + String(WiFi.SSID()));
@@ -101,18 +103,6 @@ void logo(){
   Heltec.display -> display();
 }
  
-void setup() {
-  Heltec.begin(true /*DisplayEnable Enable*/, false /*LoRa Enable*/, true /*Serial Enable*/);  // Activalion de l'écran OLED
-  logo();  // Affiche le "splash screen"
-  delay(2000);
-  Heltec.display->clear();
-  
-  Serial.begin(115200);
-  
-  //wifiConnect(); // Choisir wifiConnect() pour une connection Wifi avec les identifiants Wifi
-  wifiConnectWPS(); // Choisir wifiConnectWPS() pour une connection Wifi en WPS
-}
-
 void wifiConnect() {
   WiFi.begin(ssid, password);
   byte count = 0;
@@ -148,7 +138,7 @@ void wifiConnectWPS () {
   Heltec.display->drawString(64,27,"le bouton WPS");
   Heltec.display->drawString(64,43,"de votre routeur...");
   Heltec.display->display();
-  Serial.println("Démmarage de WPS");
+  Serial.println("Démarrage de WPS");
   
   wpsInitConfig();
   esp_wifi_wps_enable(&config);
@@ -297,10 +287,31 @@ void signalBars () {
 }
 
 void batteryPower () {
-    Heltec.display->drawRect(110,56,18,8);
-    // TODO Ajouter la gestion de la batterie
+  Heltec.display->drawRect(110,56,18,8);
+  // TODO Ajouter la gestion de la batterie
 }
 
+void lightSleep () {
+  Serial.println("light sleep");
+  esp_sleep_enable_ext0_wakeup(GPIO_NUM_0, 0);
+  esp_sleep_enable_gpio_wakeup();
+  Heltec.display -> displayOff();
+  int ls = esp_light_sleep_start();
+  Serial.printf("light_sleep: %d\n", ls);
+  Heltec.display -> displayOn();
+}
+
+void setup() {
+  Heltec.begin(true /*DisplayEnable Enable*/, false /*LoRa Enable*/, true /*Serial Enable*/);  // Activalion de l'écran OLED
+  logo();  // Affiche le "splash screen"
+  delay(2000);
+  Heltec.display->clear();
+  
+  Serial.begin(115200);
+  
+  //wifiConnect(); // Choisir wifiConnect() pour une connection Wifi avec les identifiants Wifi
+  wifiConnectWPS(); // Choisir wifiConnectWPS() pour une connection Wifi en WPS
+}
  
 void loop() {
 
@@ -328,6 +339,15 @@ void loop() {
     }
 
     http.end(); // libération des ressources
+    delay(29000);
   }
-  delay(30000); // Délais de 30 secondes avant de récupérer les nouvelles données sur OWM
+  delay(1000);
+
+  cycle++;
+  Serial.println("Cycle = " + (String)cycle);
+  if (cycle >= 3) { //Déclenchement de la veille au bout de la 3ème boucle
+    cycle=0;
+    lightSleep();
+  }
+  
 }
