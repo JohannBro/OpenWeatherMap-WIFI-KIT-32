@@ -28,8 +28,8 @@ const String key = "......"; // Cle API de OWM
 dans le setup()
 Choix de connexion Wifi (Identifiants dans le code ou WPS)
 ```
-//wifiConnect(); // Choisir wifiConnect() pour une connection Wifi avec les identifiants
-wifiConnectWPS(); // Choisir wifiConnectWPS() pour une connection Wifi en WPS
+//wifiConnect(); // Choisir wifiConnect() pour une connexion Wifi avec les identifiants
+wifiConnectWPS(); // Choisir wifiConnectWPS() pour une connexion Wifi en WPS
 ```
 
 # A faire
