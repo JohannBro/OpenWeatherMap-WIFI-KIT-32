@@ -41,7 +41,7 @@ Gestion de la batterie
 
 L'intensité demandée est de 60mA environ en fonctionnement normal.
 
-Lors de transferts de données via Wifi la consommation est de 135mA environ.
+Lors de transferts de données via Wifi (toutes les 30 secondes) la consommation est de 135mA environ.
 
 En veille "Light sleep" la consommation descend à 11mA. ( https://www.youtube.com/watch?v=TE8BYvdfDUc)
 
