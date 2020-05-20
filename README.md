@@ -32,8 +32,8 @@ Choix de connexion Wifi (Identifiants dans le code ou WPS)
 wifiConnectWPS(); // Choisir wifiConnectWPS() pour une connexion Wifi en WPS
 ```
 
-# A faire
-Gestion de la batterie
+# Gestion de la batterie
+Depuis la version 0.4, la gestion de la batterie a été ajoutée via la surveillance du GPIO37. J'ai effectué une calibration de la lecture mais il y aura probablement des ajustements de cette calibration à faire pour obtenir une lecture plus fine.
 
 
 
