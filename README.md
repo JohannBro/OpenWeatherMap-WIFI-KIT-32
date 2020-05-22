@@ -1,5 +1,8 @@
 # OpenWeatherMap-WIFI-KIT-32
-Utilisation de l'API REST d'open Weather Map sur un ESP32 équipé d'un écran OLED de 0,96 pouce (Heltec WIFI KIT 32)
+Utilisation de l'API REST d'open Weather Map sur un ESP32 équipé d'un écran OLED de 0,96 pouce (Heltec WIFI KIT 32).
+Gestion des connexions WPS et station, de la capacité batterie, de la veille de l'ESP32 et de son écran.
+
+Aperçu de la V0.1:
 https://youtu.be/elu4MmB6_aU
 
 ![01](./images/01.jpg)
