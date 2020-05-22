@@ -42,10 +42,10 @@ Depuis la version 0.4, la gestion de la batterie a été ajoutée via la surveil
 
 # Consommation
 
-L'intensité demandée est de 60mA environ en fonctionnement normal.
+L'intensité demandée est de 60mAh environ en fonctionnement normal (écran allumé et module WiFi actif).
 
-Lors de transferts de données via Wifi (toutes les 30 secondes) la consommation est de 135mA environ.
+Lors de transferts de données via Wifi (toutes les 30 secondes) la consommation pass à 135mAh environ.
 
-En veille "Light sleep" la consommation descend à 11mA. ( https://www.youtube.com/watch?v=TE8BYvdfDUc)
+En veille "Light sleep" la consommation descend à 11mAh. ( https://www.youtube.com/watch?v=TE8BYvdfDUc )
 
 ![02](./images/02.jpg)
